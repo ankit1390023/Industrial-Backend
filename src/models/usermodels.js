@@ -1,28 +1,28 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt"; // For hashing passwords
+import bcrypt, { genSalt } from "bcrypt"; // For hashing passwords
 import jwt from "jsonwebtoken"; // For managing tokens
 
 const userSchema = new mongoose.Schema({
-    watchHistory: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Video' // Assuming watch history refers to a video or similar model
-    }],
     username: {
         type: String,
         required: true,
         unique: true, // Ensure unique usernames
+        lowercase: true,
+        trim: true,
+        index: true,
     },
     fullname: {
         type: String,
         required: true,
+        trim: true,
+        index: true,
     },
     avatar: {
-        type: String,
+        type: String,  //cloudinary pr url store hoga
         required: true,
     },
     coverImage: {
         type: String,
-        default: '', // Default value if no cover image is provided
     },
     email: {
         type: String,
@@ -32,14 +32,17 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
-        select: false, // Don't return the password by default
+        required: [true, 'Password  is  required'],
     },
+    watchHistory: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Video' // Assuming watch history refers to a video or similar model
+    }],
     refreshToken: {
         type: String,
-        default: null // Default value for refreshToken if not provided
     }
 }, { timestamps: true });
+
 
 // Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
@@ -49,7 +52,7 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-// Method to compare password
+//custom Method to compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
@@ -60,17 +63,22 @@ userSchema.methods.generateAuthToken = function () {
     return token;
 };
 
-// Method to add to watch history
-userSchema.methods.addToWatchHistory = function (videoId) {
-    if (!this.watchHistory.includes(videoId)) {
-        this.watchHistory.push(videoId);
+userSchema.methods.genAccessToken = function () {
+    const payload = {
+        id: this._id,
+        email: this.email,
+        username: this.username,
+        fullname: this.fullName,
     }
-};
 
-// Method to remove from watch history
-userSchema.methods.removeFromWatchHistory = function (videoId) {
-    this.watchHistory = this.watchHistory.filter(id => id.toString() !== videoId.toString());
-};
-
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACESS_TOKEN_EXPIRY});
+    
+}
+userSchema.methods.genRefreshToken = async function () {
+    const payload = {
+        id: this._id,
+    }
+    return jwt.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY })
+}
 const User = mongoose.model('User', userSchema);
 export default User;

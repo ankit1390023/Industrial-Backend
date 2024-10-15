@@ -7,5 +7,5 @@ app.use(express.urlencoded({ extended: true, linit: "16kb" }));
 app.use(cookieParser());
 app.use(express.static('public'));
 
-export default app;
+
 
