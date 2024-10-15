@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         index: true,
     },
-    fullname: {
+    fullName: {
         type: String,
         required: true,
         trim: true,
@@ -51,7 +51,6 @@ userSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
-
 //custom Method to compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
@@ -63,22 +62,23 @@ userSchema.methods.generateAuthToken = function () {
     return token;
 };
 
-userSchema.methods.genAccessToken = function () {
+userSchema.methods.genAccessToken =async function () {
     const payload = {
-        id: this._id,
+        _id: this._id,
         email: this.email,
         username: this.username,
         fullname: this.fullName,
     }
 
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACESS_TOKEN_EXPIRY});
-    
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
+
 }
 userSchema.methods.genRefreshToken = async function () {
     const payload = {
         id: this._id,
     }
-    return jwt.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY })
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_RESCRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY})
 }
+
 const User = mongoose.model('User', userSchema);
 export default User;
