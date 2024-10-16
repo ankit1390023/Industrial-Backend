@@ -4,6 +4,8 @@ import User from '../models/usermodels.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import ApiResponse from './../utils/apiResponse.js';
 import bcrypt from 'bcrypt';
+import {jwt } from 'jsonwebtoken';
+
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
     try {
@@ -20,7 +22,6 @@ const generateAcessTokenAndRefreshToken = async (userId) => {
         throw new apiError(500, error, 'Something went wrong while  generating Access & Refresh token');
     }
 }
-
 const registerUser = asyncHandler(async (req, res) => {
 
     //get user details from backend
@@ -96,7 +97,6 @@ const registerUser = asyncHandler(async (req, res) => {
     // console.log('Im response', response);
     // return response;
 });
-
 const loginUser = asyncHandler(async (req, res) => {
 
     const { email,username, password } = req.body;
@@ -135,7 +135,6 @@ const loginUser = asyncHandler(async (req, res) => {
             )
         )
 });
-
 const logoutUser = asyncHandler(async(req,res) => {
     User.findByIdAndUpdate(
         req.user._id,
@@ -158,8 +157,43 @@ const logoutUser = asyncHandler(async(req,res) => {
         .json(new ApiResponse(200, {}, "User logged Out Successfully"));
     
 })
+const refreshAccessToken = asyncHandler(async(req,res) => {
+   try {
+     //ydi koi mobile app  use kr rha h ,to incomingRefreshToken req.body.refreshToken k through milega
+     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+     if (!incomingRefreshToken) {
+         throw new apiError(401, 'Unauthorized request due to invalid incomingRefreshToken');
+     }
+     //check if refresh token is valid
+     const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+     const user = await User.findById(decodedToken?._id);
+     if (!user) {
+         throw new apiError(401, "Unauthorized access due to invalid refresh token");
+     }
+     if (incomingRefreshToken !== user?.refreshToken) {
+         throw new apiError(401, "Refresh token is expired or used");
+     }
+     const { accessToken, newrefreshToken } =await generateAcessTokenAndRefreshToken(user._id);
+ 
+     const options = {
+         httpOnly: true, // Prevents client-side access to the cookie
+         secure: true,
+         sameSite: "Strict", // CSRF protection
+         maxAge: 24 * 60 * 60 * 1000 // Cookie expiration time (e.g., 1 day)
+     }
+       return res
+           .status(200)
+           .cookie("accessToken", accessToken, options)
+           .cookie("refreshToken", newrefreshToken, options)
+           .json(
+               new ApiResponse(200, { accessToken, refreshToken: newrefreshToken }, "Token Refreshed Successfully")
+         )
+   } catch (error) {
+       throw new apiError(401, error?.message||"REFRESH ACCESS TOKEN CODE FAILED");
+   }
+})
 
-export { registerUser, loginUser ,logoutUser};
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
 
 
 
