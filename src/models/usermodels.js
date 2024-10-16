@@ -42,8 +42,6 @@ const userSchema = new mongoose.Schema({
         type: String,
     }
 }, { timestamps: true });
-
-
 // Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next(); // Only hash the password if it has been modified
@@ -55,13 +53,11 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
-
 // Method to generate JWT
 userSchema.methods.generateAuthToken = function () {
     const token = jwt.sign({ id: this._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     return token;
 };
-
 userSchema.methods.genAccessToken =async function () {
     const payload = {
         _id: this._id,
@@ -75,10 +71,10 @@ userSchema.methods.genAccessToken =async function () {
 }
 userSchema.methods.genRefreshToken = async function () {
     const payload = {
-        id: this._id,
+        _id: this._id,
     }
     return jwt.sign(payload, process.env.REFRESH_TOKEN_RESCRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY})
 }
-
 const User = mongoose.model('User', userSchema);
 export default User;
+``
