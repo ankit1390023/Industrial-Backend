@@ -4,7 +4,8 @@ import User from '../models/usermodels.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import ApiResponse from './../utils/apiResponse.js';
 import bcrypt from 'bcrypt';
-import {jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+
 
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
