@@ -73,8 +73,7 @@ userSchema.methods.genRefreshToken = async function () {
     const payload = {
         _id: this._id,
     }
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_RESCRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY})
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY})
 }
 const User = mongoose.model('User', userSchema);
-export default User;
-``
+export { User };

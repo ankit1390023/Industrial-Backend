@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-import User from "./usermodels";
+import { User } from '../models/usermodels.js';
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+
 const videoSchema = new mongoose.Schema({
     videoFile: {
         type: String, //cloudinary url
