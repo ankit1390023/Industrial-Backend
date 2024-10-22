@@ -1,10 +1,11 @@
 import {User} from '../models/usermodels.js';
-import { apiError } from '../utils/apiError.js';
-import asyncHandler from './../utils/asyncHandler.js';
+import { asyncHandler } from "../utils/asyncHandler.js"
+import { ApiResponse } from './../utils/apiResponse.js';
+import { apiError } from './../utils/apiError.js';
 import jwt from "jsonwebtoken"; // For managing tokens
 
 
-export const verifyJwt = asyncHandler(async (req, res,next) => {
+const verifyJwt = asyncHandler(async (req, res,next) => {
     try {
         const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
         if (!token) {
@@ -24,3 +25,4 @@ export const verifyJwt = asyncHandler(async (req, res,next) => {
         throw new apiError(401, error?.message || "Invalid Access Token");
     }
 });
+export { verifyJwt };

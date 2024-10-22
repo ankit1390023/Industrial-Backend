@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose");
+import mongoose from 'mongoose';
 import {User} from './usermodels.js';
 import { Video } from './videomodels.js'
 const playlistSchema = new mongoose.Schema({

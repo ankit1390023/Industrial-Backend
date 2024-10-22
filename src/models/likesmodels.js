@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { User } from './usermodels'
-import { Video } from './postmodels'
+import { User } from './usermodels.js'
+import { Video } from './videomodels.js'
 const likesSchema = new mongoose.Schema({
     comment: {
         type: mongoose.Schema.Types.ObjectId,
